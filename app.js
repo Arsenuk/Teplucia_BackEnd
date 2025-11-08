@@ -6,6 +6,7 @@ import cookieParser from "cookie-parser";
 
 import authRoutes from "./routes/authRoutes.js";
 import sensorRoutes from "./routes/sensorRoutes.js";
+import recommendationRoutes from "./routes/recommendationRoutes.js";
 
 dotenv.config();
 
@@ -20,6 +21,7 @@ app.use(cors({
 app.use(express.json());
 app.use(cookieParser());
 
+app.use("/api/recommendations", recommendationRoutes);
 app.use("/api/sensors", sensorRoutes);
 app.use("/api/auth", authRoutes);
 

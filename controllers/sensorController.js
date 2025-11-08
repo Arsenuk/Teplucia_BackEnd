@@ -3,13 +3,13 @@ import { getLatestSensorData } from "../models/sensorModel.js";
 
 export const getLatest = async (req, res) => {
   try {
-    const data = await getLatestSensorData();
+    // ✅ Отримуємо лише дані користувача
+    const data = await getLatestSensorData(req.user.id);
 
-    // 🔹 Формуємо структуру типу:
+    // 🔹 Формуємо структуру:
     // {
-    //   "DHT11": { "temp": 23.4 },
-    //   "AHT20": { "hum": 45.1 },
-    //   "BMP280": { "press": 1012.8 }
+    //   "DHT11": { "temp": { value: 23.4, unit: "°C", time: "..." } },
+    //   "AHT20": { "hum": { value: 45.1, unit: "%", time: "..." } }
     // }
     const formatted = {};
     data.forEach((row) => {
@@ -23,7 +23,7 @@ export const getLatest = async (req, res) => {
 
     res.json(formatted);
   } catch (err) {
-    console.error(err);
+    console.error("❌ Error in getLatest:", err);
     res.status(500).json({ message: "Помилка сервера" });
   }
 };

@@ -13,7 +13,7 @@ const app = express();
 
 // Дозвіл CORS для фронту
 app.use(cors({
-  origin: "http://localhost:3000", // або "*", якщо треба дозволити
+  origin: "http://localhost:5173", // або "*", якщо треба дозволити
   credentials: true
 }));
 

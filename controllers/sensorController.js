@@ -21,6 +21,8 @@ export const getLatest = async (req, res) => {
       };
     });
 
+    
+
     res.json(formatted);
   } catch (err) {
     console.error("❌ Error in getLatest:", err);

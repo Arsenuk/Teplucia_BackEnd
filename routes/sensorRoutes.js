@@ -30,6 +30,36 @@ const verifyApiKey = (req, res, next) => {
 router.get("/recommendations", verifyToken, getRecommendations);
 router.get("/latest", verifyToken, getLatest);
 
+router.get("/latest-public", async (req, res) => {
+  try {
+    const [rows] = await db.execute(`
+      SELECT sensor_name, property_name, value, unit, created_at
+      FROM sensor_values
+      WHERE id IN (
+        SELECT MAX(id)
+        FROM sensor_values
+        GROUP BY sensor_name, property_name
+      )
+    `);
+
+    const formatted = {};
+    rows.forEach((row) => {
+      if (!formatted[row.sensor_name]) formatted[row.sensor_name] = {};
+      formatted[row.sensor_name][row.property_name] = {
+        value: row.value,
+        unit: row.unit || "",
+        time: row.created_at,
+      };
+    });
+
+    res.json(formatted);
+  } catch (err) {
+    console.error("❌ Error in /latest-public:", err);
+    res.status(500).json({ message: "Помилка сервера" });
+  }
+});
+
+
 // 🔐 Запис від користувача з токеном
 router.post("/", verifyToken, async (req, res) => {
   try {

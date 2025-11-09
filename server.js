@@ -1,7 +1,8 @@
+// server.js
 import dotenv from "dotenv";
 import http from "http";
 import app from "./app.js";
-import { initSocket } from "./controllers/socketController.js";
+import { initSocket } from "./services/socketService.js"; // ✅ ОНОВЛЕНО
 import { Server } from "socket.io";
 
 dotenv.config();
@@ -20,7 +21,7 @@ const io = new Server(server, {
   }
 });
 
-// Передаємо io в socketController
+// Ініціалізація WebSocket логіки
 initSocket(io);
 
 server.listen(PORT, () => {

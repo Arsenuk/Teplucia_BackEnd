@@ -2,6 +2,8 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
+import "./services/arduinoConnection.js";
+
 
 import authRoutes from "./routes/authRoutes.js";
 import sensorRoutes from "./routes/sensorRoutes.js";

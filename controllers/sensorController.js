@@ -1,31 +1,41 @@
-// src/controllers/sensorController.js
-import { getLatestSensorData } from "../models/sensorModel.js";
+import { SensorService } from "../services/sensorService.js";
 
-export const getLatest = async (req, res) => {
-  try {
-    // ✅ Отримуємо лише дані користувача
-    const data = await getLatestSensorData(req.user.id);
+export const SensorController = {
+  async createSensorData(req, res) {
+    try {
+      const data = req.body;
 
-    // 🔹 Формуємо структуру:
-    // {
-    //   "DHT11": { "temp": { value: 23.4, unit: "°C", time: "..." } },
-    //   "AHT20": { "hum": { value: 45.1, unit: "%", time: "..." } }
-    // }
-    const formatted = {};
-    data.forEach((row) => {
-      if (!formatted[row.sensor_name]) formatted[row.sensor_name] = {};
-      formatted[row.sensor_name][row.property_name] = {
-        value: row.value,
-        unit: row.unit || "",
-        time: row.created_at,
-      };
-    });
+      if (!data || typeof data !== "object") {
+        return res.status(400).json({ error: "Invalid JSON format" });
+      }
 
-    
+      // 🔹 передаємо об’єкт напряму в сервіс, хай він розбирається
+      const savedData = await SensorService.createFromPayload(data);
 
-    res.json(formatted);
-  } catch (err) {
-    console.error("❌ Error in getLatest:", err);
-    res.status(500).json({ message: "Помилка сервера" });
-  }
+      res.status(201).json({ message: "Data saved successfully", data: savedData });
+    } catch (error) {
+      console.error("Error saving sensor data:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  },
+
+  async getAllSensorData(req, res) {
+    try {
+      const sensors = await SensorService.getAll();
+      res.status(200).json(sensors);
+    } catch (error) {
+      console.error("Error fetching sensors:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  },
+
+  async getLatest(req, res) {
+    try {
+      const latest = await SensorService.getLatest();
+      res.status(200).json(latest);
+    } catch (error) {
+      console.error("Error fetching latest sensor data:", error);
+      res.status(500).json({ error: "Internal server error" });
+    }
+  },
 };

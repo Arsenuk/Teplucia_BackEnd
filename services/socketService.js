@@ -11,48 +11,50 @@ const units = {
   soil: "%"
 };
 
+// Зберігаємо підключених клієнтів (arduino, фронт)
+export const connectedDevices = new Map();
+
 export const initSocket = (io) => {
   io.on("connection", (socket) => {
-    console.log(`🟢 Клієнт підключився: ${socket.id}`);
+    console.log(`🟢 Нове з'єднання: ${socket.id}`);
+    console.log("✅ WebSocket connected:", socket.id);
 
-    // 📩 Коли приходять дані від Arduino
+    socket.on("register_device", (deviceName) => {
+      connectedDevices.set(deviceName, socket.id);
+      console.log(`📡 Зареєстровано пристрій: ${deviceName}`);
+    });
+
     socket.on("sensor_data", async (data) => {
       try {
-        if (!data || typeof data !== "object") {
-          console.warn("⚠️ Некоректні дані від пристрою:", data);
-          return;
-        }
+        if (!data || typeof data !== "object") return;
 
         for (const [sensorName, sensorData] of Object.entries(data)) {
           let property, value;
 
-          // 🧠 Підтримуємо обидва формати:
-          // { dht11: { property: "temp", value: 23.4 } }
-          // або старий: { dht11: { temp: 23.4 } }
           if ("value" in sensorData && "property" in sensorData) {
             property = sensorData.property;
             value = parseFloat(sensorData.value);
           } else {
-            const [propKey, propValue] = Object.entries(sensorData)[0];
-            property = propKey;
-            value = parseFloat(propValue);
+            const [key, val] = Object.entries(sensorData)[0];
+            property = key;
+            value = parseFloat(val);
           }
 
           const unit = units[property] || "";
 
-          // ✅ Перевіряємо, чи є сенсор у БД
-          const [existingSensor] = await db.execute(
+          // створюємо сенсор, якщо ще не існує
+          const [rows] = await db.execute(
             `SELECT id FROM sensors WHERE name = ?`,
             [sensorName]
           );
 
-          if (existingSensor.length === 0) {
+          if (rows.length === 0) {
             await db.execute(`INSERT INTO sensors (name) VALUES (?)`, [
               sensorName
             ]);
           }
 
-          // 💾 Записуємо нове вимірювання
+          // додаємо вимір
           await db.execute(
             `INSERT INTO sensor_values (sensor_name, property_name, value, unit, created_at)
              VALUES (?, ?, ?, ?, NOW())`,
@@ -60,8 +62,8 @@ export const initSocket = (io) => {
           );
         }
 
-        console.log("✅ Дані збережено через WebSocket");
-        socket.emit("ack", { message: "✅ Sensor data saved via WebSocket" });
+        socket.emit("ack", { message: "✅ Data saved via WebSocket" });
+        console.log("✅ Дані збережено через WS");
       } catch (err) {
         console.error("❌ Помилка при збереженні WS даних:", err);
         socket.emit("ack", { message: "❌ Server error" });
@@ -70,6 +72,13 @@ export const initSocket = (io) => {
 
     socket.on("disconnect", () => {
       console.log(`🔴 Клієнт відключився: ${socket.id}`);
+      for (const [name, id] of connectedDevices.entries()) {
+        if (id === socket.id) {
+          connectedDevices.delete(name);
+          console.log(`❌ Пристрій ${name} видалено`);
+          break;
+        }
+      }
     });
   });
 };

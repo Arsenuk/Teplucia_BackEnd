@@ -1,30 +1,21 @@
-// testSocket.js
 import { io } from "socket.io-client";
 
-const socket = io("wss://litigable-sage-nabobish.ngrok-free.dev", {
+const socket = io("http://localhost:3000", {
   transports: ["websocket"],
 });
 
 socket.on("connect", () => {
-  console.log("🟢 Підключено як тестовий Arduino:", socket.id);
-  socket.emit("register_arduino");
+  console.log("✅ Connected to server:", socket.id);
 
-  // симулюємо надсилання даних
-  setInterval(() => {
-    const fakeData = {
-      DHT11: { temp: 23.5 },
-      AHT20: { hum: 44.1 },
-      BMP280: { press: 1012.5 },
-      SOIL: { hum: 56.3 },
-    };
-    console.log("📤 Відправлено дані:", fakeData);
-    socket.emit("sensor_data", fakeData);
-  }, 5000);
+  socket.emit("sensor_data", {
+    dht11: { property: "temp", value: 23.5 },
+  });
 });
 
-socket.on("request_data", () => {
-  console.log("📡 Отримано запит на оновлення!");
+socket.on("ack", (msg) => {
+  console.log("📩 Server ACK:", msg);
 });
 
-socket.on("ack", (msg) => console.log("✅ ACK:", msg));
-socket.on("disconnect", () => console.log("🔴 Відключено"));
+socket.on("disconnect", (reason) => {
+  console.log("❌ Disconnected:", reason);
+});

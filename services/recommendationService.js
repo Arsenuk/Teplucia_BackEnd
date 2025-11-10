@@ -25,12 +25,12 @@ export class RecommendationService {
         else if (val > plant.soil_hum_max) rec = "Надлишок вологи 🌊";
       }
 
-      if (sensor.property_name === "temp" && sensor.sensor_name === "AIR") {
+      if (sensor.property_name === "temp") {
         if (val < plant.air_temp_min) rec = "Підвищити температуру 🌡️";
         else if (val > plant.air_temp_max) rec = "Знизити температуру ❄️";
       }
 
-      if (sensor.property_name === "hum" && sensor.sensor_name === "AIR") {
+      if (sensor.property_name === "hum" && sensor.sensor_name === "AHT20") {
         if (val < plant.air_hum_min) rec = "Підвищити вологість 💦";
         else if (val > plant.air_hum_max) rec = "Зменшити вологість 🌬️";
       }

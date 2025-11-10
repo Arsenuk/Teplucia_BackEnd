@@ -14,12 +14,21 @@ const app = express();
 
 // дозволяємо доступ і з локального фронту, і з ngrok
 app.use(cors({
-  origin: [
-    "http://localhost:5173",
-    `https://${process.env.SERVER_HOST}`
-  ],
-  credentials: true
+  origin: (origin, callback) => {
+    // ✅ дозволяємо фронт із localhost + ngrok
+    const allowedOrigins = [
+      "http://localhost:5173",
+      `https://${process.env.SERVER_HOST}`,
+    ];
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  credentials: true,
 }));
+
 
 app.use(express.json());
 app.use(cookieParser());

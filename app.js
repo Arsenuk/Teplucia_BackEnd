@@ -2,10 +2,8 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
-import "./services/arduinoConnection.js";
 import plantRoutes from "./routes/plantRoutes.js";
-
-
+import arduinoRoute from "./routes/arduinoRoute.js";
 import authRoutes from "./routes/authRoutes.js";
 import sensorRoutes from "./routes/sensorRoutes.js";
 import recommendationRoutes from "./routes/recommendationRoutes.js";
@@ -27,6 +25,7 @@ app.use(express.json());
 app.use(cookieParser());
 
 // маршрути
+app.use("/api/arduino", arduinoRoute);
 app.use("/api/plants", plantRoutes);
 app.use("/api/recommendations", recommendationRoutes);
 app.use("/api/sensors", sensorRoutes);
@@ -35,5 +34,4 @@ app.use("/api/auth", authRoutes);
 app.get("/", (req, res) => {
   res.send("🌱 Greenhouse API is running (via ngrok tunnel)...");
 });
-
 export default app;

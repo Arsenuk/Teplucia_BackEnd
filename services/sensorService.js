@@ -24,8 +24,13 @@ export const SensorService = {
 
       // 2️⃣ Проходимо всі властивості сенсора (temp, hum, press...)
       for (const [propertyName, propertyData] of Object.entries(properties)) {
-        const value = parseFloat(propertyData.value);
-        const unit = propertyData.unit || "";
+        const value = parseFloat(propertyData);
+            const unit = {
+              temp: "°C",
+              hum: "%",
+              press: "hPa",
+          }[propertyName] || "";
+
 
         if (isNaN(value)) {
           console.warn(`⚠️ Некоректне значення для ${sensorName}.${propertyName}: ${propertyData.value}`);

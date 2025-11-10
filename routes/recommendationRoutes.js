@@ -1,10 +1,11 @@
+// routes/recommendationRoutes.js
 import express from "express";
 import { verifyToken } from "../middlewares/authMiddleware.js";
-import { getRecommendations } from "../controllers/recommendationController.js";
+import { RecommendationController } from "../controllers/recommendationController.js";
 
 const router = express.Router();
+const controller = new RecommendationController();
 
-router.get("/", verifyToken, getRecommendations);
+router.get("/", verifyToken, controller.getRecommendations);
 
 export default router;
-//затестити чи рекомендації працюють

@@ -12,7 +12,8 @@ router.post("/logout", logout);  // Додаємо logout
 router.get("/me", verifyToken, (req, res) => {
     res.json({
       id: req.user.id,
-      email: req.user.email
+      email: req.user.email,
+      role: req.user.role
     });
   });
 

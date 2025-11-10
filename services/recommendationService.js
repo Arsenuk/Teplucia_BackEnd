@@ -1,13 +1,16 @@
+// services/RecommendationService.js
 import { SensorModel } from "../models/sensorModel.js";
 import { RecommendationModel } from "../models/recommendationModel.js";
 
-//добавити виняток, якщо показників немає, щоб не показувало що все в нормі.
+export class RecommendationService {
+  constructor() {
+    this.sensorModel = new SensorModel();
+    this.recommendationModel = new RecommendationModel();
+  }
 
-export const RecommendationService = {
   async generate(userId) {
-    const sensors = await SensorModel.getLatestByUser(userId);
-    const plants = await RecommendationModel.getPlantsByUser(userId);
-
+    const sensors = await this.sensorModel.getLatestByUser(userId);
+    const plants = await this.recommendationModel.getPlantsByUser(userId);
     const recommendations = [];
 
     for (const sensor of sensors) {
@@ -50,5 +53,5 @@ export const RecommendationService = {
     return recommendations.length
       ? recommendations
       : ["Усі показники в нормі 🌿"];
-  },
-};
+  }
+}

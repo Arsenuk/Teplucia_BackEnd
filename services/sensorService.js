@@ -1,68 +1,54 @@
 import db from "../config/db.js";
 import { SensorModel } from "../models/sensorModel.js";
 
-export const SensorService = {
-  // ✅ Обробка payload від Arduino
+export class SensorService {
+  constructor() {
+    this.model = new SensorModel();
+  }
+
   async createFromPayload(payload, userId) {
     const saved = [];
 
     for (const [sensorName, properties] of Object.entries(payload)) {
-      // 1️⃣ Перевіряємо, чи сенсор належить цьому користувачу
       const [sensorRows] = await db.execute(
         "SELECT * FROM sensors WHERE name = ? AND user_id = ?",
         [sensorName, userId]
       );
 
       if (sensorRows.length === 0) {
-        console.log(`➕ Створюємо новий сенсор '${sensorName}' для користувача ${userId}`);
         await db.execute(
           "INSERT INTO sensors (name, user_id) VALUES (?, ?)",
           [sensorName, userId]
         );
       }
-      
 
-      // 2️⃣ Проходимо всі властивості сенсора (temp, hum, press...)
       for (const [propertyName, propertyData] of Object.entries(properties)) {
         const value = parseFloat(propertyData);
-            const unit = {
-              temp: "°C",
-              hum: "%",
-              press: "hPa",
-          }[propertyName] || "";
+        const unit = { temp: "°C", hum: "%", press: "hPa" }[propertyName] || "";
 
+        if (isNaN(value)) continue;
 
-        if (isNaN(value)) {
-          console.warn(`⚠️ Некоректне значення для ${sensorName}.${propertyName}: ${propertyData.value}`);
-          continue;
-        }
-
-        // 3️⃣ Зберігаємо у базу
-        const record = await SensorModel.saveValue(sensorName, propertyName, value, unit);
+        const record = await this.model.saveValue(sensorName, propertyName, value, unit);
         saved.push(record);
       }
     }
 
     return saved;
-  },
+  }
 
-  // ✅ Отримати всі дані користувача
   async getAllByUser(userId) {
-    return await SensorModel.getAllByUser(userId);
-  },
+    return await this.model.getAllByUser(userId);
+  }
 
-  // ✅ Отримати останні дані користувача
   async getLatestByUser(userId) {
-    return await SensorModel.getLatestByUser(userId);
-  },
+    return await this.model.getLatestByUser(userId);
+  }
 
   async getAll() {
-    return await SensorModel.getAll();
-  },
+    return await this.model.getAll();
+  }
 
   async getLatest() {
-    return await SensorModel.getLatest();
-  },
-
-};
-
+    return await this.model.getLatest();
+  }
+}

@@ -1,6 +1,7 @@
+// models/RecommendationModel.js
 import db from "../config/db.js";
 
-export const RecommendationModel = {
+export class RecommendationModel {
   async getPlantsByUser(userId) {
     const [rows] = await db.execute(
       `SELECT 
@@ -20,5 +21,5 @@ export const RecommendationModel = {
       [userId]
     );
     return rows;
-  },
-};
+  }
+}

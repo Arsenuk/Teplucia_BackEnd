@@ -7,3 +7,4 @@ const router = express.Router();
 router.get("/", verifyToken, getRecommendations);
 
 export default router;
+//затестити чи рекомендації працюють

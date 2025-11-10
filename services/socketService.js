@@ -1,69 +1,42 @@
-import db from "../config/db.js";
 import dotenv from "dotenv";
-
+import { SensorService } from "../services/sensorService.js"; // ✅ додаємо
 dotenv.config();
 
-const units = {
-  temp: "°C",
-  hum: "%",
-  press: "hPa",
-  light: "lx",
-  soil: "%"
-};
+console.log("🔍 ARDUINO_TOKEN із .env:", process.env.ARDUINO_TOKEN);
 
-// Зберігаємо підключених клієнтів (arduino, фронт)
+
 export const connectedDevices = new Map();
 
 export const initSocket = (io) => {
   io.on("connection", (socket) => {
-    console.log(`🟢 Нове з'єднання: ${socket.id}`);
-    console.log("✅ WebSocket connected:", socket.id);
+    const token = socket.handshake.query.token;
+    console.log("🧩 Отримано токен від клієнта:", token);
+    console.log("🧩 Очікуваний токен:", `"${process.env.ARDUINO_TOKEN}"`);
 
+    if (token !== process.env.ARDUINO_TOKEN) {
+      console.log(`❌ Відхилено неавторизоване підключення (${socket.id})`);
+      socket.disconnect(true);
+      return;
+    }
+
+    console.log(`🟢 Нове з'єднання: ${socket.id}`);
     socket.on("register_device", (deviceName) => {
       connectedDevices.set(deviceName, socket.id);
       console.log(`📡 Зареєстровано пристрій: ${deviceName}`);
     });
 
+    // 🔹 Отримання даних від Arduino
     socket.on("sensor_data", async (data) => {
       try {
         if (!data || typeof data !== "object") return;
 
-        for (const [sensorName, sensorData] of Object.entries(data)) {
-          let property, value;
+        // ⚠️ Поки що фіксований userId (для MVP)
+        const userId = 1;
 
-          if ("value" in sensorData && "property" in sensorData) {
-            property = sensorData.property;
-            value = parseFloat(sensorData.value);
-          } else {
-            const [key, val] = Object.entries(sensorData)[0];
-            property = key;
-            value = parseFloat(val);
-          }
+        const saved = await SensorService.createFromPayload(data, userId);
 
-          const unit = units[property] || "";
-
-          // створюємо сенсор, якщо ще не існує
-          const [rows] = await db.execute(
-            `SELECT id FROM sensors WHERE name = ?`,
-            [sensorName]
-          );
-
-          if (rows.length === 0) {
-            await db.execute(`INSERT INTO sensors (name) VALUES (?)`, [
-              sensorName
-            ]);
-          }
-
-          // додаємо вимір
-          await db.execute(
-            `INSERT INTO sensor_values (sensor_name, property_name, value, unit, created_at)
-             VALUES (?, ?, ?, ?, NOW())`,
-            [sensorName, property, value, unit]
-          );
-        }
-
-        socket.emit("ack", { message: "✅ Data saved via WebSocket" });
-        console.log("✅ Дані збережено через WS");
+        socket.emit("ack", { message: `✅ Збережено ${saved.length} показників` });
+        console.log(`✅ Збережено ${saved.length} показників через WebSocket`);
       } catch (err) {
         console.error("❌ Помилка при збереженні WS даних:", err);
         socket.emit("ack", { message: "❌ Server error" });

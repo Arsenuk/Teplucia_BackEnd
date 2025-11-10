@@ -17,6 +17,9 @@ export const connectArduino = () => {
     transports: ["websocket"],
     reconnectionAttempts: 5,
     reconnectionDelay: 3000,
+    query: {
+      token: process.env.ARDUINO_TOKEN, // ✅ додаємо сюди токен
+    },
   });
 
   arduinoSocket.on("connect", () => {

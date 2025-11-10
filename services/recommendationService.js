@@ -1,6 +1,8 @@
 import { SensorModel } from "../models/sensorModel.js";
 import { RecommendationModel } from "../models/recommendationModel.js";
 
+//добавити виняток, якщо показників немає, щоб не показувало що все в нормі.
+
 export const RecommendationService = {
   async generate(userId) {
     const sensors = await SensorModel.getLatestByUser(userId);

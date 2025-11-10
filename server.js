@@ -1,11 +1,15 @@
 // server.js
 import dotenv from "dotenv";
+dotenv.config();
 import http from "http";
 import app from "./app.js";
 import { initSocket } from "./services/socketService.js"; // ✅ ОНОВЛЕНО
 import { Server } from "socket.io";
 
-dotenv.config();
+console.log("🔍 Перевірка .env:");
+console.log("  TEST_ENV =", process.env.TEST_ENV);
+console.log("  ARDUINO_TOKEN =", process.env.ARDUINO_TOKEN);
+console.log("  PORT =", process.env.PORT);
 
 const PORT = process.env.PORT || 3000;
 const server = http.createServer(app);

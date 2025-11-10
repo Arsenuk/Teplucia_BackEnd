@@ -3,6 +3,7 @@ import cors from "cors";
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 import "./services/arduinoConnection.js";
+import plantRoutes from "./routes/plantRoutes.js";
 
 
 import authRoutes from "./routes/authRoutes.js";
@@ -26,6 +27,7 @@ app.use(express.json());
 app.use(cookieParser());
 
 // маршрути
+app.use("/api/plants", plantRoutes);
 app.use("/api/recommendations", recommendationRoutes);
 app.use("/api/sensors", sensorRoutes);
 app.use("/api/auth", authRoutes);

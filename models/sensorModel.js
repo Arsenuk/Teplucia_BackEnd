@@ -70,4 +70,9 @@ export class SensorModel {
     `);
     return rows;
   }
+  async findByName(sensorName) {
+    const [rows] = await db.execute(`SELECT * FROM sensors WHERE name = ?`, [sensorName]);
+    return rows[0] || null;
+  }
+  
 }

@@ -6,25 +6,38 @@ export class SensorService {
     this.model = new SensorModel();
   }
 
-  async createFromPayload(payload, userId) {
+  async createFromPayload(payload, userId = null) {
     const saved = [];
 
     for (const [sensorName, properties] of Object.entries(payload)) {
-      const [sensorRows] = await db.execute(
-        "SELECT * FROM sensors WHERE name = ? AND user_id = ?",
-        [sensorName, userId]
-      );
+      let sensorRows;
 
+      // Якщо userId не заданий (Arduino API)
+      if (userId === null) {
+        [sensorRows] = await db.execute(
+          "SELECT * FROM sensors WHERE name = ?",
+          [sensorName]
+        );
+      } else {
+        [sensorRows] = await db.execute(
+          "SELECT * FROM sensors WHERE name = ? AND user_id = ?",
+          [sensorName, userId]
+        );
+      }
+
+      // Якщо сенсор не знайдено — створюємо
       if (sensorRows.length === 0) {
         await db.execute(
           "INSERT INTO sensors (name, user_id) VALUES (?, ?)",
           [sensorName, userId]
         );
+        console.log(`➕ Створено новий сенсор: ${sensorName}`);
       }
 
+      // Зберігаємо значення для кожної властивості
       for (const [propertyName, propertyData] of Object.entries(properties)) {
         const value = parseFloat(propertyData);
-        const unit = { temp: "°C", hum: "%", press: "hPa" }[propertyName] || "";
+        const unit = { temp: "°C", hum: "%", press: "hPa", lux: "lx" }[propertyName] || "";
 
         if (isNaN(value)) continue;
 

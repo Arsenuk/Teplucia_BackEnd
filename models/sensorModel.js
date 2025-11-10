@@ -70,9 +70,31 @@ export class SensorModel {
     `);
     return rows;
   }
+
+  // ✅ знайти сенсор за ім'ям (для Arduino)
   async findByName(sensorName) {
-    const [rows] = await db.execute(`SELECT * FROM sensors WHERE name = ?`, [sensorName]);
+    const [rows] = await db.execute(
+      `SELECT * FROM sensors WHERE name = ?`,
+      [sensorName]
+    );
     return rows[0] || null;
   }
-  
+
+  // ✅ знайти сенсор за ім'ям і user_id (для звичайних користувачів)
+  async findByNameAndUser(sensorName, userId) {
+    const [rows] = await db.execute(
+      `SELECT * FROM sensors WHERE name = ? AND user_id = ?`,
+      [sensorName, userId]
+    );
+    return rows[0] || null;
+  }
+
+  // ✅ створити сенсор
+  async create(sensorName, userId = null) {
+    const [result] = await db.execute(
+      `INSERT INTO sensors (name, user_id) VALUES (?, ?)`,
+      [sensorName, userId]
+    );
+    return result.insertId;
+  }
 }

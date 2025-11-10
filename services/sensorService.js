@@ -1,4 +1,3 @@
-import db from "../config/db.js";
 import { SensorModel } from "../models/sensorModel.js";
 
 export class SensorService {
@@ -10,35 +9,21 @@ export class SensorService {
     const saved = [];
 
     for (const [sensorName, properties] of Object.entries(payload)) {
-      let sensorRows;
+      // ✅ знаходимо сенсор
+      const existingSensor = userId
+        ? await this.model.findByNameAndUser(sensorName, userId)
+        : await this.model.findByName(sensorName);
 
-      // Якщо userId не заданий (Arduino API)
-      if (userId === null) {
-        [sensorRows] = await db.execute(
-          "SELECT * FROM sensors WHERE name = ?",
-          [sensorName]
-        );
-      } else {
-        [sensorRows] = await db.execute(
-          "SELECT * FROM sensors WHERE name = ? AND user_id = ?",
-          [sensorName, userId]
-        );
-      }
-
-      // Якщо сенсор не знайдено — створюємо
-      if (sensorRows.length === 0) {
-        await db.execute(
-          "INSERT INTO sensors (name, user_id) VALUES (?, ?)",
-          [sensorName, userId]
-        );
+      // ✅ якщо не існує — створюємо
+      if (!existingSensor) {
+        await this.model.create(sensorName, userId);
         console.log(`➕ Створено новий сенсор: ${sensorName}`);
       }
 
-      // Зберігаємо значення для кожної властивості
+      // ✅ зберігаємо дані сенсора
       for (const [propertyName, propertyData] of Object.entries(properties)) {
         const value = parseFloat(propertyData);
         const unit = { temp: "°C", hum: "%", press: "hPa", lux: "lx" }[propertyName] || "";
-
         if (isNaN(value)) continue;
 
         const record = await this.model.saveValue(sensorName, propertyName, value, unit);

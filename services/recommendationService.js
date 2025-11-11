@@ -35,9 +35,9 @@ export class RecommendationService {
         else if (val > plant.air_hum_max) rec = "Зменшити вологість 🌬️";
       }
 
-      if (sensor.property_name === "lux" && sensor.sensor_name === "LIGHT") {
-        if (val < plant.light_min) rec = "Додати освітлення ☀️";
-        else if (val > plant.light_max) rec = "Зменшити освітлення 🌑";
+      if (sensor.property_name === "press" ) {
+        if (val < plant.air_press_min) rec = "Позвоніть сонцю, я гіпотонік :)";
+        else if (val > plant.air_hum_max) rec = "Позвоніть місяцю, я гіпертонік 🌑";
       }
 
       if (rec) {

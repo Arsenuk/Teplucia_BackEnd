@@ -14,6 +14,8 @@ export class RecommendationModel {
          p.air_temp_max,
          p.air_hum_min,
          p.air_hum_max,
+         p.air_press_min,
+         p.air_press_max,
          s.name AS sensor_name
        FROM plants p
        JOIN sensors s ON s.plant_id = p.id
